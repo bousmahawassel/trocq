@@ -1,0 +1,64 @@
+accumulate "Trocq.Elpi/aterm".
+
+kind pattern-concl type.
+% app [C|[X1...Xn]] @ A ~ res.
+type pattern-concl gref -> list aterm -> aterm -> term -> pattern-concl.
+
+kind premisse type.
+% [| A |] x y
+type premisse aterm -> aterm -> term -> premisse.
+
+typeabbrev premisses (list premisse).
+
+kind pattern type.
+type pattern premisses -> pattern-concl -> pattern.
+
+kind sealed-pattern type.
+type seal-pattern pattern -> sealed-pattern.
+% forall x, ... (where x is a term)
+type add-var name -> (term -> sealed-pattern) -> sealed-pattern.
+% forall x, ... (where x is an aterm)
+type add-avar name -> (aterm -> sealed-pattern) -> sealed-pattern.
+
+namespace pattern.util {
+
+func pat-concl-hd pattern-concl -> gref.
+pat-concl-hd (pattern-concl G _ _ _) G.
+
+func pat-concl-arity pattern-concl -> int.
+pat-concl-arity (pattern-concl _ L _ _) N :- std.length L N.
+
+func pat-hd pattern -> gref.
+pat-hd (pattern _ P) G :- pat-concl-hd P G.
+
+func pat-arity pattern -> int.
+pat-arity (pattern _ P) N :- pat-concl-arity P N.
+
+func sealed-pat-hd sealed-pattern -> gref.
+sealed-pat-hd (seal-pattern P) G :- pat-hd P G.
+sealed-pat-hd (add-var _ F) G :- sealed-pat-hd (F _) G.
+sealed-pat-hd (add-avar _ F) G :- sealed-pat-hd (F _) G.
+
+func sealed-pat-arity sealed-pattern -> int.
+sealed-pat-arity (seal-pattern P) N :- pat-arity P N.
+sealed-pat-arity (add-var _ F) N :- sealed-pat-arity (F _) N.
+sealed-pat-arity (add-avar _ F) N :- sealed-pat-arity (F _) N.
+
+% initializes the sealed-pattern into a pattern with fresh vars (to be unified, hopefully),
+% and initializes the pattern witness as well
+pred unseal sealed-pattern, term, (pred term, pattern).
+unseal (seal-pattern P) T F :- F T P.
+unseal (add-var _ P) T F :- unseal (P X) {coq.mk-app T [X]} F.
+unseal (add-avar _ P) T F :- unseal (P X) {coq.mk-app T [{aterm->term X}]} F.
+
+% Checks that the arguments received are enough to match the pattern, and split between
+% args "for the pattern" and "other" args
+func split-args pattern, list aterm -> list aterm, list aterm.
+split-args P Args PatArgs OtherArgs :-
+  pat-arity P N,
+  std.split-at N Args PatArgs OtherArgs.
+
+pred match i: pattern, i: list aterm.
+match (pattern _ (pattern-concl _ L _ _)) L' :- std.forall2 L L' (=).
+
+} % pattern.util
