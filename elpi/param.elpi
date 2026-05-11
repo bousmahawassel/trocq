@@ -137,6 +137,21 @@ param
     logging.debug (coq.say "[param] Out rule pi :" T' "∵" Witness)
   ].
 
+%TrocqConv + TrocqAppPat + TrocqApp
+param (aapp [H|L] as TL) B TR Witness :-
+  logging.debug (coq.say "[param] Trying to find a pattern for" TL "@" B "~" TR),
+  aterm.util.global H GR,
+  coq.say "[param] Checking for pattern with head " GR,
+  trocq.data.pattern GR L TR Prems A TW OArgsL OArgsR,
+  std.do! [
+  logging.debug (coq.say "[param] found pattern for head" GR "applied to arguments" OArgsL),
+  param.check-premisses Prems PremsW,
+  param.args A B OArgsL OArgsR OArgsW B0,
+  coq.mk-app TW {std.append PremsW OArgsW} Witness',
+  weaken B0 B {aterm->term TL} TR Witness' Witness,
+  logging.debug (coq.say "[param] Out rule pattern + app :" TR "@" Witness)
+  ].
+
 % TrocqConv for F (argument B in param.args) + TrocqApp
 param (aapp [F|Xs] as T) B (app [F'|Xs'] as T') Witness :- !, std.do! [
   logging.debug (coq.say "[param] Rule app :" T "@" B),
@@ -147,6 +162,11 @@ param (aapp [F|Xs] as T) B (app [F'|Xs'] as T') Witness :- !, std.do! [
   weaken B0 B {aterm->term T} T' AppR Witness,
   logging.debug (coq.say "[param] Out rule app :" T' "∵" Witness)
 ].
+
+pred param.check-premisses i:premisses, o: list term.
+param.check-premisses [] [].
+param.check-premisses [(premisse T A T')|L] [TR|L'] :-
+  param T A T' TR, param.check-premisses L L'.
 
 pred param.args i:aterm, o:aterm, i:list aterm, o:list term, o:list term, o:aterm.
 param.args B0 B [] [] [] B0 :- std.do! [
