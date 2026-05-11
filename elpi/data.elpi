@@ -169,4 +169,26 @@ namespace trocq {
   data.gref G Alpha List T TR :- !,
     trocq.error "NYI Registering trocq to a non-gref term".
 
+
+  % {pattern G L T Prems A TR OArgsL OArgsR} looks up the database to find an instantiated pattern :
+  % - whose head is G
+  % - such that L can be decomposed into a list that matches the pattern's left side's arguments, and OArgsL
+  % - whose premisses are Prems
+  % - such that T can be decomposed into the pattern's right side applied to OArgsR (who has to be of same length as OArgsL)
+  % - whose right side can be matched against the head of T  (if T was specified)
+  % - such that TR is the witness of the pattern, applied to all the instantiated variables of the pattern (but not the premisses)
+  % - such that A is the type of the pattern (which should be a product if OArgsL and OArgsR are not empty)
+  pred data.pattern i:gref, i:list aterm, o:term, o:premisses, o:aterm, o:term, o:list aterm, o:list term.
+  data.pattern G L T Prems A TR OArgsL OArgsR :- var T, !,
+  % If T is uvar, we take the first matching pattern from the DB
+  trocq.db.pattern G SP W,
+  pattern.util.unseal SP W (w\ P\ (
+    TR = w,
+    pattern.util.split-args P L PArgs OArgsL,
+    pattern.util.match P PArgs, !, % the pattern matches: we can ignore all other patterns
+    util.uninit {std.length OArgsL} OArgsR,
+    P = pattern Prems (pattern-concl _ _ A TPat),
+    coq.mk-app TPat OArgsR T
+  )).
+
 } % trocq

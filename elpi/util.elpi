@@ -162,6 +162,11 @@ func bool->int bool -> int.
 bool->int tt 1.
 bool->int ff 0.
 
+% { uninit N L } makes sure that L is of size N (or builds it of size N with uninitialized elements).
+pred uninit int -> list A.
+uninit 0 [].
+uninit N L :- M is N - 1, uninit M L', L = [_|L'].
+
 } % util
 
 pred std.string.list->set i:list string, o:std.string.set.

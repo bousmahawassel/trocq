@@ -12,6 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 accumulate "Trocq.Elpi/class".
+accumulate "Trocq.Elpi/pattern".
 
 namespace trocq.db {
 
@@ -113,3 +114,9 @@ pred trocq.db.gref o:gref, o:param-class, o:list param-class, o:gref, o:gref.
 % Rel GR ω [α_1, ..., α_n] GR' GRR` will be used, i.e. added to the above
 % database gref.
 pred trocq.db.known-gref o:gref, o:gref, o:param-class, o:list param-class, o:gref, o:gref.
+
+% relates a head, a pattern, and a witness
+pred trocq.db.pattern o:gref, o:sealed-pattern, o:term.
+
+% the equivalent of known-gref for pattern
+pred trocq.db.known-pattern o:gref, o:gref, o:sealed-pattern, o:term.
