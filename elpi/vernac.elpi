@@ -12,7 +12,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 accumulate "Trocq.Elpi/param-class-util".
-accumulate "Trocq.Elpi/aterm".
 accumulate "Trocq.Elpi/data".
 
 % command to register the univalence axiom

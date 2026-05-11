@@ -12,7 +12,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 accumulate "Trocq.Elpi/data".
-accumulate "Trocq.Elpi/aterm".
 
 pred generate-param-forall
   i:param-class, i:univ, i:univ, i:univ.variable, i:univ.variable,
