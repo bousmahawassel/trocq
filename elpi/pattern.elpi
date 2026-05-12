@@ -61,4 +61,27 @@ split-args P Args PatArgs OtherArgs :-
 pred match i: pattern, i: list aterm.
 match (pattern _ (pattern-concl _ L _ _)) L' :- std.forall2 L L' (=).
 
+pred parse term -> sealed-pattern.
+parse T SP :- pi V A U\ parse.sealed T V A U SP.
+
+% { parse.sealed T V A U SP } converts a term T into a
+% sealed-pattern SP, using V, A and U to signal the (meta-)variables
+% of the pattern, with V signaling variables known to be terms,
+% A signaling variables known to be aterms, and U signaling
+% variables that are not yet known to be annotated or not.
+pred parse.sealed term, (term -> term), (aterm -> term),
+     (term -> aterm -> term) -> sealed-pattern.
+% parse.sealed (prod _ T F) V A U (add-avar F') :-
+%   is-avar T, !, pi X\ parse.sealed (F (A X)) V A U (F' X).
+% parse.sealed (prod _ T F) V A U (add-var F') :-
+%   is-tvar T, !, pi X\ parse.sealed (F (V X)) V A U (F' X).
+parse.sealed T V A U (seal-pattern P) :-
+  parse.pattern T V A U P, !.
+parse.sealed (prod Name _ F) V A U SP :-
+  (pi X Y\ parse.sealed (F (U X Y)) V A U (SP' X Y)),
+  if2
+    (pi X Y\ SP' X Y = FT X) (SP = add-var Name FT)
+    (pi X Y\ SP' X Y = FA Y) (SP = add-avar Name FA)
+    false. % I can't use trocq.error here to avoid double declaration in DB and not-DB. Maybe this function should be moved somewhere else.
+
 } % pattern.util
