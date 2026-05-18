@@ -20,5 +20,8 @@ From Trocq Require Export
 
 (* TODO: should we also export some variant-specific files, such as Param_Prop.v? *)
 
-Trocq Use Param10_paths.
-Trocq Use Param01_paths.
+Definition core := Type.
+
+Trocq DB Register core.
+
+Trocq Use Param10_paths Param01_paths : core.
