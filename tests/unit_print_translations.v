@@ -15,9 +15,6 @@ From Trocq Require Import Stdlib Trocq.
 
 Set Universe Polymorphism.
 
-Elpi Command Warning.
-Elpi Query lp:{{ coq.warn "TODO: Fix Print Translations." "" }}.
-
 Section PrintTranslations.
     Variable (A A' A'' : Type).
     Variable (B : A -> Type) (B' : A' -> Type) (B'' : A'' -> Type).
@@ -36,12 +33,12 @@ Section PrintTranslations.
 
     Trocq Use RA1 RA2 RB1 RB2 RC1 RC2 : RA1.
     
-    Fail Trocq Print Translations.
+    Trocq Print DB *.
 
-    Fail Trocq Print Translations A.
+    Trocq Print Translations A.
 
-    Fail Trocq Print Translations B.
+    Trocq Print Translations B.
 
-    Fail Trocq Print Translations C.
+    Trocq Print Translations C.
 
 End PrintTranslations.

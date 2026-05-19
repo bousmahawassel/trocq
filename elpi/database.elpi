@@ -114,9 +114,7 @@ namespace trocq.db {
 %        gref ListDB {{ list }} (4, 4) [(4, 4)] {{ list }} {{ list44 }}
 pred trocq.db.gref o:db, o:gref, o:param-class, o:list param-class, o:gref, o:gref.
 
-% Resolve the inclusion of Databases. If there is a cycle in inclusions, this won't stop.
-% When adding translations to the database, they should be put before this clause,
-% so that translations in the included database won't shadow the ones in the bigger database.
-:name "inclusion"
-trocq.db.gref DB2 G Alpha List TG TGR :-
-  trocq.db.included DB1 DB2, trocq.db.gref DB1 G Alpha List TG TGR.
+% When inserting in the DB, this clause will serve as an anchor to add clauses to the top of the
+% database, making sure that new clauses will resolve first
+:name "top"
+trocq.db.gref _ _ _ _ _ _ :- fail.

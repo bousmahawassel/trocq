@@ -25,11 +25,13 @@ namespace trocq.translations {
   func load-db.to-translation (pred) -> (pred).
   load-db.to-translation (trocq.db.gref _ G Alpha List TG TGR) (trocq.translations.gref G Alpha List TG TGR).
 
-  % generates a list of trocq.translations.gref from a specific DB
+  % generates a list of trocq.translations.gref from a specific DB (and all included DBs)
   func load-db db -> list (pred).
   load-db DB L :-
     std.findall (trocq.db.gref DB _ _ _ _ _) L',
-    std.map L' load-db.to-translation L.
+    trocq.data.list-included DB DBs,
+    load-dbs DBs LIncl,
+    std.append { std.map L' load-db.to-translation } LIncl L.
   % generates a list of trocq.translations.gref from a list of DBs.
   % This list can directly be used as the left hand side of a (==>),
   % with priorities set up such that the first DB (and included)'s translations will be considered first,
@@ -140,44 +142,54 @@ namespace trocq.data {
     ),
     W = fun _ _ t\ fun _ _ t'\ fun _ _ tr\ WF t t' tr.
 
+  func list-dbs -> list db.
+  list-dbs DBs :-
+    std.findall (trocq.db.is-db _) L,
+    std.map L (P\ DB\ P = trocq.db.is-db DB) DBs.
+
+  func list-included db -> list db.
+  list-included DB DBs :-
+    std.findall (trocq.db.included _ DB) L,
+    std.map L (P\ DB\ P = trocq.db.included DB _) DBs.
+
 % TODO (Wassel) : FIX LATER
 
-  % data.traslations.grefs is the list of grefs that Trocq knows how to translate
-  % func translations.grefs.extract (pred) -> gref.
-  % translations.grefs.extract (trocq.db.gref G _ _ _ _) G :- !.
-  % pred translations.grefs -> list gref.
-  % translations.grefs Goals :- do-not-fail => (
-  %   std.findall (trocq.db.gref _ _ _ _ _) Translations,
-  %   std.map Translations translations.grefs.extract Goals
-  % ).
+  % data.translations.grefs is the list of grefs that Trocq knows how to translate
+  func translations.grefs.extract (pred) -> gref.
+  translations.grefs.extract (trocq.db.gref _ G _ _ _ _) G :- !.
+  pred translations.grefs db -> list gref.
+  translations.grefs DB Goals :- do-not-fail => (
+    std.findall (trocq.db.gref DB _ _ _ _ _) Translations,
+    std.map Translations translations.grefs.extract Goals
+  ).
 
   % translations.of G is the list of registered translation goal of gref G
-  % func translations.of.extract (pred) -> gref.
-  % translations.of.extract (trocq.db.gref _ _ _ G' _) G' :- !.
-  % pred translations.of gref -> list gref.
-  % translations.of G Goals :- do-not-fail => (
-  %   std.findall (trocq.db.gref G _ _ _ _) Translations,
-  %   std.map Translations translations.of.extract Goals
-  % ).
+  func translations.of.extract (pred) -> gref.
+  translations.of.extract (trocq.db.gref _ _ _ _ G' _) G' :- !.
+  pred translations.of db, gref -> list gref.
+  translations.of DB G Goals :- do-not-fail => (
+    std.findall (trocq.db.gref DB G _ _ _ _) Translations,
+    std.map Translations translations.of.extract Goals
+  ).
 
   % translations.ins G is the list of registered input class levels for translation G ~ G'
-  % func translations.ins.extract (pred) -> list param-class.
-  % translations.ins.extract (trocq.db.gref _ _ Ins _ _) Ins :- !.
-  % pred translations.ins gref, gref -> list (list param-class).
-  % translations.ins G G' Inss :- do-not-fail => (
-  %   std.findall (trocq.db.gref G _ _ G' _) Translations,
-  %   std.map Translations translations.ins.extract Inss
-  % ).
+  func translations.ins.extract (pred) -> list param-class.
+  translations.ins.extract (trocq.db.gref _ _ _ Ins _ _) Ins :- !.
+  pred translations.ins db, gref, gref -> list (list param-class).
+  translations.ins DB G G' Inss :- do-not-fail => (
+    std.findall (trocq.db.gref DB G _ _ G' _) Translations,
+    std.map Translations translations.ins.extract Inss
+  ).
 
   % translations.out G G' Ins is the list of registered translation goal of gref G
   % with annotations Ins to goal G'.
-  % func translations.out.extract (pred) -> param-class.
-  % translations.out.extract (trocq.db.gref _ L _ _ _) L :- !.
-  % pred translations.out gref, gref, list param-class -> list param-class.
-  % translations.out G G' InLvl OutLvls :- do-not-fail => (
-  %   std.findall (trocq.db.gref G _ InLvl G' _) Translations,
-  %   std.map Translations translations.out.extract OutLvls
-  % ).
+  func translations.out.extract (pred) -> param-class.
+  translations.out.extract (trocq.db.gref _ _ L _ _ _) L :- !.
+  pred translations.out db, gref, gref, list param-class -> list param-class.
+  translations.out DB G G' InLvl OutLvls :- do-not-fail => (
+    std.findall (trocq.db.gref DB G _ InLvl G' _) Translations,
+    std.map Translations translations.out.extract OutLvls
+  ).
 
 } % trocq.data
 
