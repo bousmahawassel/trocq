@@ -103,6 +103,9 @@ namespace trocq.db {
   % { included DB1 DB2 } means that every translation in DB1 should be added to DB2.
   pred included o:db, o:db.
 
+  % Tracks the gref registered as identity databases. Those databases should always be loaded.
+  pred is-id o:db.
+
 }
 
 % gref DB GR ω [α_1, ..., α_n] GR' GRR, means that, in DB:

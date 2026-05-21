@@ -34,10 +34,13 @@ use GRR DBs :- !, std.do! [
   std.forall DBs DB\ std.do! [
     coq.gref->id DB DBName,
     util.unless (trocq.db.is-db DB) (
-      logging.warning (
-        coq.warning "trocq" "unregistered-db" DBName "was not registered as a DB."
-      ),
+      coq.warning "trocq" "unregistered-db" DBName "was not registered as a DB.",
       coq.elpi.accumulate _ "trocq.db" (clause _ _ (trocq.db.is-db DB))
+    ),
+    util.unless (GR = GR') (
+      util.when (trocq.data.sub-id DB) (
+        trocq.error "Cannot add translation between" GRId "and" GR'Id "to" DBName "because" DBName "is included in an identity database"
+      )
     ),
     logging.info (
       coq.info "accumulating" GRId "@" Class "(" CList ") ~"
@@ -173,13 +176,25 @@ print-db.included DB :-
   trocq.data.list-included DB DBs,
   coq.info "includes databases:" {std.string.concat " " {std.map DBs coq.gref->string} }.
 
+pred print-db.id i: db.
+print-db.id DB :-
+  trocq.db.is-id DB, !,
+  coq.info "This database is an identity database".
+print-db.id DB :-
+  trocq.data.sub-id DB, !,
+  coq.info "This database is included in an identity database".
+print-db.id DB :-
+  coq.info "This database is not an identity database".
+
 pred print-db i: db.
 print-db DB :-
   coq.info "Database" {coq.gref->string DB} ":",
   coq.info,
   print-db.grefs DB,
   coq.info,
-  print-db.included DB.
+  print-db.included DB,
+  coq.info,
+  print-db.id DB.
   
 
 % Prints all databases
@@ -190,7 +205,7 @@ main [str "Print", str "DB", str "*"] :- !,
 % Prints listed databases
 main [str "Print", str "DB", X | L] :- !,
   std.map [X | L] util.argument->gref DBs,
-  std.forall DBs (DB\ unless (trocq.db.is-db DB) (trocq.error DB "is not a registered database")),
+  std.forall DBs (DB\ util.unless (trocq.db.is-db DB) (trocq.error DB "is not a registered database")),
   std.forall DBs (DB\ print-db DB, coq.info).
 
 pred print-translations i: db, i: gref.
@@ -223,7 +238,7 @@ main [str "Print", str "Translations", Obj] :- !,
 main [str "Print", str "Translations", Obj, str ":",  X | L] :- !,
   util.argument->gref Obj G,
   std.map [X | L] util.argument->gref DBs,
-  std.forall DBs (DB\ unless (trocq.db.is-db DB) (trocq.error DB "is not a registered database")),
+  std.forall DBs (DB\ util.unless (trocq.db.is-db DB) (trocq.error DB "is not a registered database")),
   std.forall DBs (DB\ print-translations DB G, coq.info).
 
 main _ :- trocq.error {std.string.concat "\n" ["command syntax error", {usage-msg}]}.

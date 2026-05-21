@@ -23,7 +23,6 @@ Section Transfer.
 
     Definition Rf := mkParam30 f.
     Trocq DB Register Rf.
-    Trocq DB Include core Into Rf.
     Trocq Use Rf : Rf.
 
     Variable (pe : I -> Prop) (pe' : I' -> Prop).

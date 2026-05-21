@@ -22,24 +22,31 @@ pred trocq.translations.gref o:gref, o:param-class, o:list param-class, o:gref, 
 namespace trocq.translations {
 
   % transforms trocq.db.gref to trocq.translations.gref
-  func load-db.to-translation (pred) -> (pred).
-  load-db.to-translation (trocq.db.gref _ G Alpha List TG TGR) (trocq.translations.gref G Alpha List TG TGR).
+  func load.db.to-translation (pred) -> (pred).
+  load.db.to-translation (trocq.db.gref _ G Alpha List TG TGR) (trocq.translations.gref G Alpha List TG TGR).
 
   % generates a list of trocq.translations.gref from a specific DB (and all included DBs)
-  func load-db db -> list (pred).
-  load-db DB L :-
+  func load.db db -> list (pred).
+  load.db DB L :-
     std.findall (trocq.db.gref DB _ _ _ _ _) L',
     trocq.data.list-included DB DBs,
-    load-dbs DBs LIncl,
-    std.append { std.map L' load-db.to-translation } LIncl L.
+    load.dbs DBs LIncl,
+    std.append { std.map L' load.db.to-translation } LIncl L.
   % generates a list of trocq.translations.gref from a list of DBs.
   % This list can directly be used as the left hand side of a (==>),
   % with priorities set up such that the first DB (and included)'s translations will be considered first,
   % then the second, etc
-  func load-dbs list db -> list (pred).
-  load-dbs DBs L :-
-    std.map DBs load-db LL,
+  func load.dbs list db -> list (pred).
+  load.dbs DBs L :-
+    std.map DBs load.db LL,
     std.flatten LL L.
+
+  func load list db -> list (pred).
+  load DBs Res :-
+    load.dbs DBs L,
+    trocq.data.id-dbs Ids,
+    load.dbs Ids R,
+    std.append L R Res.
 
 } % trocq.translations
 
@@ -142,17 +149,28 @@ namespace trocq.data {
     ),
     W = fun _ _ t\ fun _ _ t'\ fun _ _ tr\ WF t t' tr.
 
+  % lists all databases
   func list-dbs -> list db.
   list-dbs DBs :-
     std.findall (trocq.db.is-db _) L,
     std.map L (P\ DB\ P = trocq.db.is-db DB) DBs.
 
+  % lists all identity databases
+  func id-dbs -> list db.
+  id-dbs DBs :-
+    std.findall (trocq.db.is-id _) L,
+    std.map L (P\ DB\ P = trocq.db.is-id DB) DBs.
+
+  % Determines if a database is included in a identity DB
+  pred sub-id i:db.
+  sub-id DB :- trocq.db.is-id DB, !.
+  sub-id DB :- trocq.db.included DB ODB, sub-id ODB.
+
+  % lists all DBs included in a given DB
   func list-included db -> list db.
   list-included DB DBs :-
     std.findall (trocq.db.included _ DB) L,
     std.map L (P\ DB\ P = trocq.db.included DB _) DBs.
-
-% TODO (Wassel) : FIX LATER
 
   % data.translations.grefs is the list of grefs that Trocq knows how to translate
   func translations.grefs.extract (pred) -> gref.
